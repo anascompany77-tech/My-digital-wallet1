@@ -37,7 +37,7 @@ jobs:
         npm install
         npm run build
 
-    # 6. حذف النظام القديم، توليد بيئة أندرويد حديثة نقية وبناء الـ APK
+    # 6. حذف النظام القديم، توليد بيئة أندرويد حديثة نقية وبناء الـ APK بنمط الـ Debug الموقّع
     - name: Recreate Android Platform & Build APK
       run: |
         cd my_project
@@ -49,14 +49,14 @@ jobs:
         npx cap add android
         npx cap sync
         
-        # الدخول وتجميع ملف الـ APK النهائي
+        # الدخول وتجميع ملف الـ APK بنمط الـ Debug لضمان التوقيع التلقائي وحل مشكلة التثبيت
         cd android
         chmod +x gradlew
-        ./gradlew assembleRelease --no-daemon
+        ./gradlew assembleDebug --no-daemon
         
-    # 7. رفع ملف الـ APK النهائي لتقوم بتحميله مباشرة
+    # 7. رفع ملف الـ APK الموقّع والجاهز للتثبيت المباشر على الهاتف
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: My-Digital-Wallet-APK
-        path: my_project/android/app/build/outputs/apk/release/app-release-unsigned.apk
+        path: my_project/android/app/build/outputs/apk/debug/app-debug.apk
