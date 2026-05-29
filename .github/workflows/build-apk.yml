@@ -17,11 +17,11 @@ jobs:
       run: |
         unzip my_digital_wallet.zip -d my_project
         
-    # 3. إعداد بيئة Node.js (مهمة لتطبيقات Capacitor)
+    # 3. إعداد بيئة Node.js (تحديث الإصدار إلى 22 لحل المشكلة)
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
 
     # 4. تثبيت جافا (مطلوبة لبناء نظام أندرويد)
     - name: Set up JDK 17
