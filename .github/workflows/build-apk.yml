@@ -37,18 +37,22 @@ jobs:
         npm install
         npm run build
 
-    # 6. مزامنة الكود وإصلاح الصلاحيات وبناء الـ APK بأمر الحماية
+    # 6. مزامنة الكود وبناء الـ APK مع توجيه الكاش لمنع التعارض
     - name: Capacitor Sync & Build APK
       run: |
         cd my_project
         npx cap sync
         cd android
         
-        # إعادة توليد أداة الـ Wrapper
+        # إعادة توليد أداة الـ Wrapper لضمان سلامتها
         gradle wrapper --gradle-version 8.2
         chmod +x gradlew
         
-        # البناء بدون ديمون لمنع قفل ملفات التشفير وإجبار التجميع على النجاح
+        # الحل القاطع: إنشاء مجلد كاش محلي وتوجيه Gradle إليه لتخطي قفل ملفات التشفير
+        mkdir -p .gradle_home
+        export GRADLE_USER_HOME=$(pwd)/.gradle_home
+        
+        # تشغيل البناء النظيف بدون ديمون
         ./gradlew assembleRelease --no-daemon --clean
 
     # 7. رفع ملف الـ APK النهائي لتقوم بتحميله
