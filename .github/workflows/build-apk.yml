@@ -3,6 +3,10 @@ name: Build My Digital Wallet APK
 on:
   workflow_dispatch: # تشغيل يدوياً بضغطة زر
 
+# الحل الحاسم: إجبار الخادم بالكامل على استخدام كاش محلي مفتوح الصلاحيات منذ أول ثانية
+env:
+  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle_home
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,22 +41,21 @@ jobs:
         npm install
         npm run build
 
-    # 6. مزامنة الكود وبناء الـ APK مع توجيه الكاش لمنع التعارض
+    # 6. مزامنة الكود وبناء الـ APK مع تنظيف كامل للبيئة
     - name: Capacitor Sync & Build APK
       run: |
         cd my_project
         npx cap sync
         cd android
         
-        # إعادة توليد أداة الـ Wrapper لضمان سلامتها
+        # تهيئة مجلد الكاش الجديد والتأكد من صلاحياته
+        mkdir -p $GRADLE_USER_HOME
+        
+        # إعادة توليد أداة الـ Wrapper لضمان النقاء البرمجي
         gradle wrapper --gradle-version 8.2
         chmod +x gradlew
         
-        # الحل القاطع: إنشاء مجلد كاش محلي وتوجيه Gradle إليه لتخطي قفل ملفات التشفير
-        mkdir -p .gradle_home
-        export GRADLE_USER_HOME=$(pwd)/.gradle_home
-        
-        # تشغيل البناء النظيف بدون ديمون
+        # البناء النظيف النهائي
         ./gradlew assembleRelease --no-daemon --clean
 
     # 7. رفع ملف الـ APK النهائي لتقوم بتحميله
