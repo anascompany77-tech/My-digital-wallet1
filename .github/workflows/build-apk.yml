@@ -17,13 +17,13 @@ jobs:
       run: |
         unzip my_digital_wallet.zip -d my_project
         
-    # 3. إعداد بيئة Node.js (تحديث الإصدار إلى 22 لحل المشكلة)
+    # 3. إعداد بيئة Node.js
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '22'
 
-    # 4. تثبيت جافا (مطلوبة لبناء نظام أندرويد)
+    # 4. تثبيت جافا
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
@@ -37,12 +37,16 @@ jobs:
         npm install
         npm run build
 
-    # 6. مزامنة الكود مع مجلد الأندرويد وبناء الـ APK عبر Gradle
+    # 6. مزامنة الكود مع مجلد الأندرويد وإصلاح Gradle Wrapper وبناء الـ APK
     - name: Capacitor Sync & Build APK
       run: |
         cd my_project
         npx cap sync
         cd android
+        
+        # خطوة الإصلاح: إعادة توليد ملف Gradle Wrapper السليم وتحديثه
+        gradle wrapper --gradle-version 8.2
+        
         chmod +x gradlew
         ./gradlew assembleRelease
 
