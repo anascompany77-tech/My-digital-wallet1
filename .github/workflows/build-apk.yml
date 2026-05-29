@@ -23,7 +23,7 @@ jobs:
       with:
         node-version: '22'
 
-    # 4. تثبيت جافا المستقرة
+    # 4. تثبيت جافا المستقرة الرائدة لبناء الأندرويد
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -37,20 +37,23 @@ jobs:
         npm install
         npm run build
 
-    # 6. مزامنة الكود، منح صلاحيات التشغيل وبناء الـ APK بنقاء كامل
-    - name: Build Android APK via Capacitor CLI
+    # 6. حذف مجلد أندرويد المعطوب وإعادة توليده بنقاء كامل لتخطي كافة الأخطاء
+    - name: Recreate Android Platform & Build APK
       run: |
         cd my_project
+        
+        # الخطوة السحرية: تدمير مجلد أندرويد المحلي المعطوب بالكامل
+        rm -rf android
+        
+        # إعادة إنشاء مجلد أندرويد رسمي جديد ونظيف بملفات Gradle سليمة 100%
+        npx cap add android
+        
+        # مزامنة ملفات الويب داخل المجلد الجديد
         npx cap sync
+        
+        # الدخول لبناء الـ APK بأعلى أداء واستقرار
         cd android
-        
-        # تنظيف أي ملفات كاش معطوبة أولاً
-        rm -rf .gradle .idea build app/build
-        
-        # الحل الحاسم: منح صلاحية التنفيذ الفورية لملف البناء قبل استدعائه
         chmod +x gradlew
-        
-        # تشغيل البناء المستقل بدون ديمون
         ./gradlew assembleRelease --no-daemon
 
     # 7. رفع ملف الـ APK النهائي لتقوم بتحميله
