@@ -3,10 +3,6 @@ name: Build My Digital Wallet APK
 on:
   workflow_dispatch: # تشغيل يدوياً بضغطة زر
 
-# الحل الحاسم: إجبار الخادم بالكامل على استخدام كاش محلي مفتوح الصلاحيات منذ أول ثانية
-env:
-  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle_home
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,42 +17,38 @@ jobs:
       run: |
         unzip my_digital_wallet.zip -d my_project
         
-    # 3. إعداد بيئة Node.js
+    # 3. إعداد بيئة Node.js (إصدار مستقر متوافق مع أحدث حزم)
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '22'
 
-    # 4. تثبيت جافا المستقرة
+    # 4. تثبيت جافا المستقرة الرائدة لبناء الأندرويد
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
 
-    # 5. تثبيت المكتبات وبناء ملفات الويب
+    # 5. تثبيت المكتبات وبناء ملفات الويب للمشروع
     - name: Install Dependencies & Build Web Assets
       run: |
         cd my_project
         npm install
         npm run build
 
-    # 6. مزامنة الكود وبناء الـ APK مع تنظيف كامل للبيئة
-    - name: Capacitor Sync & Build APK
+    # 6. البناء الجذري المستقل عبر Capacitor CLI لتجنب تعارض كاش النظام
+    - name: Build Android APK via Capacitor CLI
       run: |
         cd my_project
         npx cap sync
         cd android
         
-        # تهيئة مجلد الكاش الجديد والتأكد من صلاحياته
-        mkdir -p $GRADLE_USER_HOME
+        # تنظيف أي ملفات كاش معطوبة مرفوعة من الجهاز المحلي فوراً
+        rm -rf .gradle .idea build app/build
         
-        # إعادة توليد أداة الـ Wrapper لضمان النقاء البرمجي
-        gradle wrapper --gradle-version 8.2
-        chmod +x gradlew
-        
-        # البناء النظيف النهائي
-        ./gradlew assembleRelease --no-daemon --clean
+        # البناء المباشر النظيف وتجاوز مشاكل الـ Daemon وقفل الملفات
+        ./gradlew assembleRelease --no-daemon --stacktrace
 
     # 7. رفع ملف الـ APK النهائي لتقوم بتحميله
     - name: Upload APK Artifact
